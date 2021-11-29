@@ -127,10 +127,10 @@ class TransactionController extends Controller
         $userid = auth()->user()->id;
 
         $balance= Transaction::where('owner', $userid)->where('approved','Y')->latest('order')->first(); 
-        
+       // dd($balance,!isset($balance) );
         if(!isset($balance) ){
-            $pre_trans= new Transaction;
-            $pre_trans->balance_after=0;
+            $balance= new Transaction;
+            $balance->balance_after=0;
         }
         
         return response()->json(['balance' => $balance->balance_after]);
