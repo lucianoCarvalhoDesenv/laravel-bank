@@ -76,9 +76,7 @@ class AuthController extends Controller
         
           //creating default wallet
          $curWallet = new Wallet;
-         $curWallet->owner_id = $user->id;
-        // $curWallet->owner_name = $user->name;
-         $curWallet->amount = 0;          
+         $curWallet->owner_id = $user->id;     
          $curWallet->save();       
 
         return response()->json([

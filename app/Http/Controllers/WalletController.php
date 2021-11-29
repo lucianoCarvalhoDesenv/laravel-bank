@@ -25,7 +25,6 @@ class WalletController extends Controller
           $curWallet->id = $request->input('id');
         }
         $curWallet->owner_id = $request->input('owner_id');
-        //$curWallet->owner_name = $request->input('owner_name');
         $curWallet->amount = 0;
 
         if( $curWallet->save() ){
@@ -36,7 +35,6 @@ class WalletController extends Controller
        public function update(Request $request){
         $curWallet = Wallet::findOrFail( $request->id );
         $curWallet->owner_id = $request->input('owner_id');
-        //$curWallet->owner_name = $request->input('owner_name');
         $curWallet->amount = 0;
     
         if( $curWallet->save() ){

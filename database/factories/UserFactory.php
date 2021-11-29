@@ -27,7 +27,7 @@ class UserFactory extends Factory
             UserFactory::$adminFlag=false;
             return [
                 'name' => 'admin',
-                'email' => 'admin@admin',
+                'email' => 'admin@admin.com',
                 'email_verified_at' => now(),
                 'type' => 'admin',
                 'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
@@ -35,7 +35,7 @@ class UserFactory extends Factory
             ];
         }
         return [
-            'name' => $this->faker->unique()->name,
+            'name' => $this->faker->unique()->firstName,
             'email' => $this->faker->unique()->safeEmail,
             'email_verified_at' => now(),
             'type' => 'customer',

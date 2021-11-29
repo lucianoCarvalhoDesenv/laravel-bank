@@ -17,6 +17,8 @@ use App\Http\Requests\TransactionRequest ;
 use App\Http\Requests\CustumerRequest;
 use App\Http\Requests\AdminRequest;
 use App\Http\Requests\JWTRequest as LoggedRequest;
+use App\Models\User as User;
+use App\Http\Resources\User as UserResource;
 
 
 class TransactionController extends Controller
@@ -31,7 +33,8 @@ class TransactionController extends Controller
 
        
         $userid = auth()->user()->id;
-        $curTransaction = Transaction::owner($userid)->approved('Y')->paginate(50);
+        $curTransaction = Transaction::owner($userid)->approved('Y')->orderBy('order', 'DESC')->get();
+        
        //->approved('Y')
         return TransactionResource::collection($curTransaction);
     }
@@ -45,8 +48,39 @@ class TransactionController extends Controller
     {
        
         $userid = auth()->user()->id;
-        $curTransaction = Transaction::owner($userid)->approved('Y')->type('P')->paginate(50);
+        $curTransaction = Transaction::owner($userid)->approved('Y')->type('P')->orderBy('order', 'DESC')->get();
         return TransactionResource::collection($curTransaction);
+    }
+
+       /**
+     * Display a listing of user accepetd incomes
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function incomes(CustumerRequest $request)
+    {
+       
+        $userid = auth()->user()->id;
+        $curTransaction = Transaction::owner($userid)->approved('Y')->type('D')->orderBy('order', 'DESC')->get();
+        return TransactionResource::collection($curTransaction);
+    }
+
+        /**
+     * Display a listing of user accepetd incomes
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function mychecks(CustumerRequest $request)
+    {
+       
+        $userid = auth()->user()->id;
+        $approved = Transaction::owner($userid)->approved('Y')->type('D')->orderBy('order', 'DESC')->get();
+        $pending = Transaction::owner($userid)->approved('W')->type('D')->orderBy('order', 'DESC')->get();
+        $rejected = Transaction::owner($userid)->approved('N')->type('D')->orderBy('order', 'DESC')->get();
+       
+        return  response()->json(['approved' => TransactionResource::collection($approved),
+                                'pending' => TransactionResource::collection($pending),
+                                'rejected'=>TransactionResource::collection($rejected) ]); 
     }
 
 
@@ -59,7 +93,7 @@ class TransactionController extends Controller
     public function waitingtransactions(AdminRequest $request)
     {
        
-        $curTransaction = Transaction::where('approved','W')->paginate(20);
+        $curTransaction = Transaction::where('approved','W')->paginate(50);
        
         return TransactionResource::collection($curTransaction);
     }
@@ -72,7 +106,10 @@ class TransactionController extends Controller
         $user =auth()->user();
         $userid = auth()->user()->id;
         if($user->type === 'admin'){
-            $transaction= Transaction::where('id',$request->id)->first();     
+            $transaction= Transaction::where('id',$request->id)->first(); 
+            $userID= $transaction->owner;
+            $user =   User::findOrFail( $userID ); 
+            return  response()->json(['transaction' => $transaction,  'user' => $user  ]); 
         }
         else{
             $transaction= Transaction::where('owner', $userid)->where('id',$request->id)->first(); 
@@ -115,9 +152,10 @@ class TransactionController extends Controller
         $transaction->pre_transaction = $pre_trans->id; 
 
         if($transaction->type == 'D') {
-            $transaction->balance_after=$pre_trans->balance_after + abs($transaction->amount);}
+            $transaction->balance_after=round(($pre_trans->balance_after + abs($transaction->amount)), 2);}
         else if($transaction->type == 'P'){
-            $transaction->balance_after=$pre_trans->balance_after - abs($transaction->amount);}
+            
+            $transaction->balance_after=round(($pre_trans->balance_after - abs($transaction->amount)), 2);}
         else{
             return response()->json(['error_message' => 'Invalid transaction Type']); 
         }    
